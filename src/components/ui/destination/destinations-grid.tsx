@@ -38,7 +38,7 @@ export function DestinationsGrid({ destinations }: { destinations: IDestination[
               {/* Image */}
               <div className="relative h-44 w-full overflow-hidden rounded-md">
                 <Image
-                  src={destination.imageUrl}
+                  src={destination.imageUrl || "https://unsplash.com"}
                   alt={destination.name}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
