@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
 
 const categories = ["Beach", "Mountain", "City", "Adventure", "Cultural"];
 
@@ -29,6 +30,7 @@ const initialForm = {
 };
 
 export default function AddDestinationPage() {
+  const router = useRouter();
   const [form, setForm] = useState(initialForm);
 
   const update = (field: keyof typeof form, value: string) =>
@@ -36,18 +38,39 @@ export default function AddDestinationPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-   
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/add-destination`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form)
-    })
 
-    const result =await res.json()
-    console.log(result)
-    
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/add-destination`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        },
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        console.log(result.message || "Failed to add travel package.");
+        return;
+      }
+
+      // alert("Travel package added successfully!");
+
+      setForm(initialForm);
+      router.push("/destinations");
+    } catch (error) {
+      console.error("Add destination error:", error);
+      alert("Something went wrong. Please try again.");
+    }
+  };
+
+  const handleCancel = () => {
+    setForm(initialForm);
+    router.push("/destinations");
   };
 
   return (
@@ -173,21 +196,21 @@ export default function AddDestinationPage() {
             </div>
           </div>
 
-    
-
           {/* Actions */}
           <div className="mt-8 flex justify-end gap-3">
             <Button
               type="button"
               variant="outline"
-              className="border-destructive/30 bg-background text-destructive hover:bg-destructive/5 hover:text-destructive"
+              onClick={handleCancel}
+              className="border-destructive/30 bg-background text-destructive hover:bg-destructive/5 hover:text-destructive cursor-pointer"
             >
               <Trash2 />
               Cancel
             </Button>
+
             <Button
               type="submit"
-              className="bg-[#00A8E8] text-white hover:bg-[#0095d1]"
+              className="bg-[#00A8E8] text-white hover:bg-[#0095d1] cursor-pointer"
             >
               <PackageCheck />
               Add Travel Package

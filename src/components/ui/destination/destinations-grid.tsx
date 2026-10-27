@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+
 import { ArrowUpRight, Calendar, MapPin, Star } from "lucide-react";
 import type { IDestination } from "@/lib/types/destinations";
 import Link from "next/link";
@@ -9,8 +9,11 @@ function rating(id: string) {
   return (4 + (sum % 10) / 10).toFixed(1);
 }
 
-export function DestinationsGrid({ destinations }: { destinations: IDestination[] }) {
-
+export function DestinationsGrid({
+  destinations,
+}: {
+  destinations: IDestination[];
+}) {
   return (
     <section className="w-full bg-background px-6 py-12">
       <div className="mx-auto max-w-7xl">
@@ -21,7 +24,6 @@ export function DestinationsGrid({ destinations }: { destinations: IDestination[
         <p className="mt-3 text-sm text-muted-foreground">
           Find your perfect travel experience from our curated collection
         </p>
-
 
         {/* Count */}
         <p className="mt-5 text-sm text-muted-foreground">
@@ -37,13 +39,14 @@ export function DestinationsGrid({ destinations }: { destinations: IDestination[
             >
               {/* Image */}
               <div className="relative h-44 w-full overflow-hidden rounded-md">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={destination.imageUrl || "https://unsplash.com"}
                   alt={destination.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover"
+                  className="w-full h-full object-cover"
                 />
+              </div>
+              <div>
                 <span className="absolute top-2 right-2 flex items-center gap-1 rounded-md bg-white px-2 py-1 text-xs font-semibold shadow-sm">
                   {rating(destination._id)}
                   <Star className="size-3 fill-black text-black" />

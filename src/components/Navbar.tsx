@@ -1,35 +1,44 @@
+"use client"
+
 import Link from "next/link";
 import { User } from "lucide-react";
 import { cn } from "cn";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
-  { href: "/", label: "Home", active: true },
-  { href: "/destinations", label: "Destinations", active: false },
-  { href: "/add-destination", label: "Add Destination", active: false },
-  { href: "/my-bookings", label: "My Bookings", active: false },
+  { href: "/", label: "Home" },
+  { href: "/destinations", label: "Destinations" },
+  { href: "/add-destination", label: "Add Destination" },
+  { href: "/my-bookings", label: "My Bookings" },
 ];
 
 export function Navbar() {
+  const pathname = usePathname();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <nav className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         {/* Left: primary links */}
         <ul className="flex items-center gap-7">
-          {navLinks.map((link) => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className={cn(
-                  "text-sm transition-colors hover:text-[#00A8E8]",
-                  link.active
-                    ? "border-b-2 border-[#00A8E8] pb-0.5 font-medium text-[#00A8E8]"
-                    : "text-foreground",
-                )}
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className={cn(
+                    "text-sm transition-colors hover:text-[#00A8E8]",
+                    isActive
+                      ? "border-b-2 border-[#00A8E8] pb-0.5 font-medium text-[#00A8E8]"
+                      : "text-foreground",
+                  )}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
         {/* Center: logo */}
