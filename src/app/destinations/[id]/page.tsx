@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -9,11 +8,15 @@ import {
   MapPin,
   Star,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { IDestination } from "@/lib/types/destinations";
 import EditDestinationDialog from "@/components/ui/destination/EditDestinationDialog";
 import DeleteDestinationDialog from "@/components/ui/destination/DeleteDestinationDialog";
+
+// Allow the route to wait for dynamic data.
+export const instant = false;
 
 const highlights = [
   "Professional local guide",
@@ -29,22 +32,26 @@ const perks = [
   "24/7 customer support",
 ];
 
-// Safe date formatter
 function formatDate(value: string) {
   if (!value) return "N/A";
+
   const parts = value.split("-");
-  if (parts.length !== 3) return value; // Return original if not YYYY-MM-DD
+
+  if (parts.length !== 3) return value;
+
   const [year, month, day] = parts;
   return `${month}/${day}/${year}`;
 }
 
 function rating(id: string) {
   const sum = id.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+
   return (4 + (sum % 10) / 10).toFixed(1);
 }
 
 function reviews(id: string) {
   const sum = id.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+
   return 120 + ((sum * 7) % 380);
 }
 
@@ -54,8 +61,22 @@ const DestinationDetailsPage = async ({
   params: Promise<{ id: string }>;
 }) => {
   const { id } = await params;
-  const res = await fetch(`http://localhost:8000/destination/${id}`);
-  if (!res.ok) notFound();
+
+  const res = await fetch(
+    `http://localhost:8000/destination/${encodeURIComponent(id)}`,
+    {
+      cache: "no-store",
+    },
+  );
+
+  if (res.status === 404) {
+    notFound();
+  }
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch destination details");
+  }
+
   const destination: IDestination = await res.json();
 
   return (
@@ -66,8 +87,10 @@ const DestinationDetailsPage = async ({
           href="/destinations"
           className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeft className="size-4" /> Back to Destinations
+          <ArrowLeft className="size-4" />
+          Back to Destinations
         </Link>
+
         <div className="flex items-center gap-3">
           <EditDestinationDialog destination={destination} />
           <DeleteDestinationDialog id={id} />
@@ -75,58 +98,64 @@ const DestinationDetailsPage = async ({
       </div>
 
       {/* Hero image */}
-      <div className="relative mt-6 h-72 w-full overflow-hidden rounded-sm md:h-80">
-        <Image
-          src={destination.imageUrl}
-          alt={destination.name}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
+      <div className="relative mt-6 h-72 w-full overflow-hidden rounded-sm bg-gray-100 md:h-80">
+        {destination.imageUrl?.trim() ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={destination.imageUrl}
+            alt={destination.name || "Destination image"}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
+            No image available
+          </div>
+        )}
       </div>
 
       {/* Details */}
       <div className="mt-6 rounded-sm border border-border bg-white p-6">
         <div className="grid gap-8 lg:grid-cols-[1fr_280px]">
-          {/* Main */}
+          {/* Main content */}
           <div>
             <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <MapPin className="size-4" /> {destination.country}
+              <MapPin className="size-4" />
+              {destination.country}
             </p>
+
             <h1 className="mt-2 text-4xl font-light tracking-tight text-foreground md:text-5xl">
               {destination.name}
             </h1>
+
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
               <span className="flex items-center gap-1.5">
                 <Star className="size-4 fill-green-600 text-green-600" />
                 <span className="font-semibold text-foreground">
-                  {" "}
-                  {rating(destination._id)}{" "}
+                  {rating(destination._id)}
                 </span>
                 <span className="text-muted-foreground">
-                  {" "}
-                  ({reviews(destination._id)} reviews){" "}
+                  ({reviews(destination._id)} reviews)
                 </span>
               </span>
+
               <span className="flex items-center gap-1.5 text-muted-foreground">
-                <CalendarDays className="size-4" /> {destination.duration}
+                <CalendarDays className="size-4" />
+                {destination.duration}
               </span>
             </div>
 
             <h2 className="mt-8 text-xl font-semibold text-foreground">
-              {" "}
-              Overview{" "}
+              Overview
             </h2>
+
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {destination.description}
             </p>
 
-            {/* FIXED: Removed duplicate description text from here */}
             <h2 className="mt-8 text-xl font-semibold text-foreground">
-              {" "}
-              Highlights{" "}
+              Highlights
             </h2>
+
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
               {highlights.map((item) => (
                 <li
@@ -143,20 +172,24 @@ const DestinationDetailsPage = async ({
           {/* Sidebar */}
           <aside className="h-fit rounded-sm border border-border p-5">
             <p className="text-sm text-muted-foreground">Starting from</p>
+
             <p className="mt-1 text-3xl font-semibold text-[#00A8E8]">
-              {" "}
-              ${destination.price}{" "}
+              ${destination.price}
             </p>
+
             <p className="mt-1 text-xs text-muted-foreground">per person</p>
+
             <Input
               readOnly
               aria-label="Departure date"
               value={formatDate(destination.departureDate)}
               className="mt-4"
             />
+
             <Button className="mt-4 w-full bg-[#00A8E8] text-white hover:bg-[#0095d1]">
               Book Now <ArrowRight />
             </Button>
+
             <ul className="mt-5 space-y-3 border-t border-border pt-5">
               {perks.map((perk) => (
                 <li
